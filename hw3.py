@@ -91,7 +91,7 @@ def connect4_eval(state):
     perpendicular = (0, 1)
     if opponent == 'O': player = 'X'
     else : player = 'O'
-    for col in range(1, 6):
+    for col in range(1, 7):
         for row in range(1, 8):
             ev += check_direction(state, col, row, diagonal_up, player)
             ev += check_direction(state, col, row, diagonal_down, player)
@@ -125,7 +125,6 @@ class HW3:
         for i in range(5):
          if c4.play_game(random_player, ab_cutoff_new_player) == -1: o += 1
         return (x, o)
-
     
 def main():
     hw3 = HW3()
