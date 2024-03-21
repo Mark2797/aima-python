@@ -78,26 +78,132 @@ def check_direction(state, col, row, direction, player):
         return sum
     else:
         return -sum
-            
+           
+def speacial_case(state, player):
+    cul_sum = 0
+    for col in range(1, 7):
+        current_col = None
+        for row in range(1, 8):
+            if state.board.get((row, col)) != None:
+                current_col = state.board.get((row, col))
+        if current_col != None:
+            cul_sub_sum = 0
+            for row in range(1, 8):
+                if state.board.get((row, col)) == current_col:
+                    cul_sub_sum += 1
+                elif state.board.get((row, col)) != None:
+                    cul_sub_sum = 0
+                    break
+            if current_col == player:
+                cul_sum += cul_sub_sum
+            else:
+                cul_sum -= cul_sub_sum
+    row_sum = 0
+    for row in range(1, 8):
+        current_row = None
+        for col in range(1, 7):
+            if state.board.get((row, col)) != None:
+                current_row = state.board.get((row, col))
+        if current_row != None:
+            row_sub_sum = 0
+            for col in range(1, 7):
+                if state.board.get((row, col)) == current_row:
+                    row_sub_sum += 1
+                elif state.board.get((row, col)) != None:
+                    row_sub_sum = 0
+                    break
+            if current_row == player:
+                row_sum += row_sub_sum
+            else:
+                row_sum -= row_sub_sum
+    # (col, row) = (x, y)
+    diagonal_up_sum = 0
+    diagonal_up_range = [(1, 7), (2, 7), (3, 7), (1, 6), (1, 5), (1, 4)]
+    for start in diagonal_up_range:
+        col = start[0]
+        row = start[1]
+        current = None
+        while True:
+            if state.board.get((row, col)) != None:
+                current = state.board.get((row, col))
+                break
+            else:
+                col += 1
+                row -= 1
+                if col == 0 or col == 7 or row == 0 or row == 8:
+                    break
+        if current != None:
+            col = start[0]
+            row = start[1]
+            diagonal_up_sub_sum = 0
+            while True:
+                if state.board.get((row, col)) == current:
+                    diagonal_up_sub_sum += 1
+                elif state.board.get((row, col)) != None:
+                    diagonal_up_sub_sum = 0
+                    break
+                col += 1
+                row -= 1
+                if col == 0 or col == 7 or row == 0 or row == 8:
+                    break
+            if current == player:
+                diagonal_up_sum += diagonal_up_sub_sum
+            else:
+                diagonal_up_sum -= diagonal_up_sub_sum
+    diagonal_down_sum = 0
+    diagonal_down_range = [(1, 4), (1, 3), (1, 2), (1, 1), (2, 1), (3, 1)]
+    for start in diagonal_down_range:
+        col = start[0]
+        row = start[1]
+        current = None
+        while True:
+            if state.board.get((row, col)) != None:
+                current = state.board.get((row, col))
+                break
+            else:
+                col += 1
+                row += 1
+                if col == 0 or col == 7 or row == 0 or row == 8:
+                    break
+        if current != None:
+            col = start[0]
+            row = start[1]
+            diagonal_down_sub_sum = 0
+            while True:
+                if state.board.get((row, col)) == current:
+                    diagonal_down_sub_sum += 1
+                elif state.board.get((row, col)) != None:
+                    diagonal_down_sub_sum = 0
+                    break
+                col += 1
+                row += 1
+                if col == 0 or col == 7 or row == 0 or row == 8:
+                    break
+            if current == player:
+                diagonal_down_sum += diagonal_down_sub_sum
+            else:
+                diagonal_down_sum -= diagonal_down_sub_sum
+    return cul_sum + row_sum + diagonal_up_sum + diagonal_down_sum
 
 # state.to_move returns the opponent's move (O or X)
 def connect4_eval(state):
     ev = 0
     opponent = state.to_move
     # direction = (col, row) = (x, y)
-    diagonal_up = (1, 1)
-    diagonal_down = (1, -1)
+    diagonal_up = (1, -1)
+    diagonal_down = (1, 1)
     horizontal = (1, 0)
-    perpendicular = (0, 1)
+    perpendicular = (0, -1)
     if opponent == 'O': player = 'X'
     else : player = 'O'
     for col in range(1, 7):
         for row in range(1, 8):
             ev += check_direction(state, col, row, diagonal_up, player)
-            ev += check_direction(state, col, row, diagonal_down, player)
             ev += check_direction(state, col, row, perpendicular, player)
+            ev += check_direction(state, col, row, diagonal_down, player)
             ev += check_direction(state, col, row, horizontal, player)
-    return ev
+    special_case_ev = speacial_case(state, player)
+    return ev + special_case_ev
 
 def ab_cutoff_new_player(game, state):
     return alpha_beta_cutoff_search(state, game, d=4, eval_fn=connect4_eval)
